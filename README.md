@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Onsective OS
 
-## Getting Started
+Company management system for **Onsective Inc** — an IT company selling SEO, social media management and digital marketing.
 
-First, run the development server:
+One app, three audiences:
+
+| Area | Who | What it covers |
+| --- | --- | --- |
+| Workspace | Admin / Manager | Employees, leave approvals, clients, sales pipeline, projects, invoices, support |
+| Workspace | Employee | Assigned tasks, time logging, own leave requests, client and project context |
+| Client portal | Client | Project progress, deliverables, invoices, support conversations |
+
+## Modules
+
+- **People** — employee directory with departments, reporting lines, employment type, salary, status; leave requests with manager approval.
+- **CRM** — clients with owners and activity timeline; drag-and-drop deal pipeline (Lead → Qualified → Proposal → Negotiation → Won/Lost) with weighted forecasting.
+- **Work pipeline** — projects per client and service line, kanban task board, per-task time entries and progress rollups.
+- **Billing** — invoices per client/project with status tracking and receivables reporting.
+- **Client portal** — scoped to the signed-in client: only `clientVisible` tasks, non-draft invoices, and their own tickets.
+
+## Stack
+
+Next.js 15 (App Router, server actions) · TypeScript · Tailwind CSS 4 · Prisma · PostgreSQL · JWT cookie sessions (`jose` + `bcryptjs`).
+
+## Getting started
 
 ```bash
+npm install
+cp .env.example .env          # then set DATABASE_URL and AUTH_SECRET
+
+docker run -d --name onsective-pg -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=onsective -p 5433:5432 postgres:16
+
+npx prisma migrate dev
+npm run seed
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`AUTH_SECRET` must be a random string of at least 32 characters (`openssl rand -base64 32`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Demo logins
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Seeded with password `onsective123`:
 
-## Learn More
+| Role | Email |
+| --- | --- |
+| Admin | `admin@onsective.com` |
+| Manager (Head of SEO) | `priya@onsective.com` |
+| Employee | `diego@onsective.com` |
+| Client portal | `client@northpeak.com` |
 
-To learn more about Next.js, take a look at the following resources:
+## Access control
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Sessions are signed JWTs in an httpOnly cookie. Every page resolves the session server-side through `requireStaff` / `requireAdmin` / `requireClient` in `src/lib/auth.ts`, and portal queries are always filtered by the session's `clientId` — clients can never read another account's data.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scripts
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Dev server |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+| `npm run seed` | Reset and reseed demo data |
