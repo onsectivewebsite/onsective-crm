@@ -7,24 +7,26 @@ import { labelize } from "@/lib/format";
 import { createEmployee } from "./actions";
 
 export default function EmployeeForm({ managers }: { managers: { id: string; name: string }[] }) {
-  const [error, formAction, pending] = useActionState(createEmployee, null);
+  const [state, formAction, pending] = useActionState(createEmployee, null);
+
+  const values = state?.values ?? {};
 
   return (
     <form action={formAction} className="grid gap-4 md:grid-cols-3">
       <Field label="Full name">
-        <input name="name" required className={inputClass} />
+        <input name="name" required className={inputClass} defaultValue={values.name ?? ""} />
       </Field>
       <Field label="Work email">
-        <input name="email" type="email" required className={inputClass} />
+        <input name="email" type="email" required className={inputClass} defaultValue={values.email ?? ""} />
       </Field>
       <Field label="Temporary password">
         <input name="password" type="text" required minLength={8} className={inputClass} />
       </Field>
       <Field label="Job title">
-        <input name="jobTitle" required className={inputClass} />
+        <input name="jobTitle" required className={inputClass} defaultValue={values.jobTitle ?? ""} />
       </Field>
       <Field label="Department">
-        <select name="department" className={inputClass} defaultValue={Department.SEO}>
+        <select name="department" className={inputClass} defaultValue={values.department ?? Department.SEO}>
           {Object.values(Department).map((department) => (
             <option key={department} value={department}>
               {labelize(department)}
@@ -33,7 +35,7 @@ export default function EmployeeForm({ managers }: { managers: { id: string; nam
         </select>
       </Field>
       <Field label="System role">
-        <select name="role" className={inputClass} defaultValue={Role.EMPLOYEE}>
+        <select name="role" className={inputClass} defaultValue={values.role ?? Role.EMPLOYEE}>
           {[Role.ADMIN, Role.MANAGER, Role.EMPLOYEE].map((role) => (
             <option key={role} value={role}>
               {labelize(role)}
@@ -42,7 +44,7 @@ export default function EmployeeForm({ managers }: { managers: { id: string; nam
         </select>
       </Field>
       <Field label="Employment type">
-        <select name="employmentType" className={inputClass} defaultValue={EmploymentType.FULL_TIME}>
+        <select name="employmentType" className={inputClass} defaultValue={values.employmentType ?? EmploymentType.FULL_TIME}>
           {Object.values(EmploymentType).map((type) => (
             <option key={type} value={type}>
               {labelize(type)}
@@ -61,16 +63,16 @@ export default function EmployeeForm({ managers }: { managers: { id: string; nam
         </select>
       </Field>
       <Field label="Phone">
-        <input name="phone" className={inputClass} />
+        <input name="phone" className={inputClass} defaultValue={values.phone ?? ""} />
       </Field>
       <Field label="Annual salary (USD)">
-        <input name="salary" type="number" min="0" step="1000" className={inputClass} />
+        <input name="salary" type="number" min="0" step="1000" className={inputClass} defaultValue={values.salary ?? ""} />
       </Field>
       <Field label="Hire date">
-        <input name="hireDate" type="date" className={inputClass} />
+        <input name="hireDate" type="date" className={inputClass} defaultValue={values.hireDate ?? ""} />
       </Field>
       <div className="md:col-span-3">
-        {error && <p className="mb-2 text-sm text-rose-600">{error}</p>}
+        {state && <p className="mb-2 text-sm text-rose-600">{state.error}</p>}
         <Button type="submit" disabled={pending}>
           {pending ? "Saving…" : "Add employee"}
         </Button>

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Department, EmployeeStatus, EmploymentType, Role } from "@prisma/client";
 import { hashPassword, requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { formValues, type FormState } from "@/lib/form-state";
 
 const employeeSchema = z.object({
   name: z.string().trim().min(1, "Full name is required."),
@@ -20,15 +21,18 @@ const employeeSchema = z.object({
   hireDate: z.string().optional(),
 });
 
-export async function createEmployee(_prev: string | null, formData: FormData): Promise<string | null> {
+export async function createEmployee(_prev: FormState, formData: FormData): Promise<FormState> {
   await requireAdmin();
 
   const parsed = employeeSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return parsed.error.issues[0].message;
+  if (!parsed.success) return { error: parsed.error.issues[0].message, values: formValues(formData) };
   const data = parsed.data;
 
   if (await prisma.user.findUnique({ where: { email: data.email } })) {
-    return `${data.email} is already used by another account.`;
+    return {
+      error: `${data.email} is already used by another account.`,
+      values: formValues(formData),
+    };
   }
 
   await prisma.user.create({

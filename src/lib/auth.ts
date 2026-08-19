@@ -86,9 +86,23 @@ export async function getSession(): Promise<SessionUser | null> {
 }
 
 export async function requireUser(): Promise<SessionUser> {
-  const user = await getSession();
-  if (!user) redirect("/login");
-  return user;
+  const session = await getSession();
+  if (!session) redirect("/login");
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.id },
+    include: { employee: { select: { id: true } } },
+  });
+  if (!user || !user.active) redirect("/login");
+
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    employeeId: user.employee?.id ?? null,
+    clientId: user.clientId,
+  };
 }
 
 export async function requireStaff(): Promise<SessionUser> {

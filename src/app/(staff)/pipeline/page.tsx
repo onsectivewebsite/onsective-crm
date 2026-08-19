@@ -42,6 +42,7 @@ export default async function PipelinePage() {
             service: deal.service,
             contactName: deal.contactName,
             company: deal.client?.company ?? null,
+            probability: deal.probability,
             owner: deal.owner?.user.name ?? "Unassigned",
           }))}
         />

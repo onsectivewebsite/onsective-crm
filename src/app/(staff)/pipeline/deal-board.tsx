@@ -10,6 +10,7 @@ type BoardDeal = {
   title: string;
   stage: DealStage;
   value: number;
+  probability: number;
   service: string;
   contactName: string;
   company: string | null;
@@ -49,7 +50,9 @@ export default function DealBoard({ stages, deals }: { stages: DealStage[]; deal
                 >
                   <p className="font-medium text-slate-800">{deal.title}</p>
                   <p className="text-xs text-slate-500">{deal.company ?? deal.contactName}</p>
-                  <p className="mt-1 text-xs text-slate-500">{labelize(deal.service)}</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {labelize(deal.service)} · {deal.probability}%
+                  </p>
                   <div className="mt-2 flex items-center justify-between text-xs">
                     <span className="font-semibold text-slate-700">{money(deal.value)}</span>
                     <span className="text-slate-400">{deal.owner}</span>

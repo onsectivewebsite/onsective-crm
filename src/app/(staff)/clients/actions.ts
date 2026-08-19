@@ -5,6 +5,7 @@ import { z } from "zod";
 import { ClientStatus } from "@prisma/client";
 import { hashPassword, requireStaff } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { formValues, type FormState } from "@/lib/form-state";
 
 const clientSchema = z.object({
   company: z.string().trim().min(1, "Company is required."),
@@ -23,15 +24,18 @@ const portalAccountSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters."),
 });
 
-export async function createClient(_prev: string | null, formData: FormData): Promise<string | null> {
+export async function createClient(_prev: FormState, formData: FormData): Promise<FormState> {
   const user = await requireStaff();
 
   const parsed = clientSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return parsed.error.issues[0].message;
+  if (!parsed.success) return { error: parsed.error.issues[0].message, values: formValues(formData) };
   const data = parsed.data;
 
   if (await prisma.client.findUnique({ where: { email: data.email } })) {
-    return `A client with the email ${data.email} already exists.`;
+    return {
+      error: `A client with the email ${data.email} already exists.`,
+      values: formValues(formData),
+    };
   }
 
   await prisma.client.create({
@@ -51,15 +55,18 @@ export async function createClient(_prev: string | null, formData: FormData): Pr
   return null;
 }
 
-export async function createPortalAccount(_prev: string | null, formData: FormData): Promise<string | null> {
+export async function createPortalAccount(_prev: FormState, formData: FormData): Promise<FormState> {
   await requireStaff();
 
   const parsed = portalAccountSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return parsed.error.issues[0].message;
+  if (!parsed.success) return { error: parsed.error.issues[0].message, values: formValues(formData) };
   const data = parsed.data;
 
   if (await prisma.user.findUnique({ where: { email: data.email } })) {
-    return `${data.email} is already used by another account.`;
+    return {
+      error: `${data.email} is already used by another account.`,
+      values: formValues(formData),
+    };
   }
 
   await prisma.user.create({
