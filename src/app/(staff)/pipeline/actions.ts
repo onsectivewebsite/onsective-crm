@@ -5,6 +5,15 @@ import { DealStage, Service } from "@prisma/client";
 import { requireStaff } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+const stageProbability: Record<DealStage, number> = {
+  LEAD: 10,
+  QUALIFIED: 25,
+  PROPOSAL: 50,
+  NEGOTIATION: 75,
+  WON: 100,
+  LOST: 0,
+};
+
 export async function createDeal(formData: FormData) {
   const user = await requireStaff();
   const clientId = String(formData.get("clientId") ?? "");
@@ -18,6 +27,7 @@ export async function createDeal(formData: FormData) {
       value: Number(formData.get("value") ?? 0),
       source: String(formData.get("source") ?? "") || null,
       stage: String(formData.get("stage")) as DealStage,
+      probability: stageProbability[String(formData.get("stage")) as DealStage],
       clientId: clientId || null,
       ownerId: user.employeeId,
       expectedCloseDate: formData.get("expectedCloseDate")
@@ -31,7 +41,10 @@ export async function createDeal(formData: FormData) {
 
 export async function moveDeal(dealId: string, stage: DealStage) {
   const user = await requireStaff();
-  const deal = await prisma.deal.update({ where: { id: dealId }, data: { stage } });
+  const deal = await prisma.deal.update({
+    where: { id: dealId },
+    data: { stage, probability: stageProbability[stage] },
+  });
 
   await prisma.activity.create({
     data: {

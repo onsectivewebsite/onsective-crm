@@ -5,7 +5,7 @@ import { labelize, money, shortDate } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import { requireStaff } from "@/lib/auth";
 import { logActivity } from "../../pipeline/actions";
-import { createPortalAccount } from "../actions";
+import PortalAccountForm from "./portal-account-form";
 
 export default async function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requireStaff();
@@ -155,21 +155,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
               ))}
             </ul>
           )}
-          <form action={createPortalAccount} className="grid gap-4 md:grid-cols-4">
-            <input type="hidden" name="clientId" value={client.id} />
-            <Field label="Full name">
-              <input name="name" required className={inputClass} />
-            </Field>
-            <Field label="Email">
-              <input name="email" type="email" required className={inputClass} />
-            </Field>
-            <Field label="Temporary password">
-              <input name="password" type="text" required minLength={8} className={inputClass} />
-            </Field>
-            <div className="flex items-end">
-              <Button type="submit">Invite to portal</Button>
-            </div>
-          </form>
+          <PortalAccountForm clientId={client.id} />
         </Card>
       </div>
     </>

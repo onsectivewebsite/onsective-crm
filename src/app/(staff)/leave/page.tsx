@@ -12,7 +12,7 @@ export default async function LeavePage() {
   const requests = await prisma.leaveRequest.findMany({
     where: admin ? {} : { employeeId: user.employeeId ?? "none" },
     include: { employee: { include: { user: true } }, reviewer: { include: { user: true } } },
-    orderBy: [{ status: "asc" }, { startDate: "desc" }],
+    orderBy: [{ startDate: "desc" }, { id: "asc" }],
   });
 
   return (

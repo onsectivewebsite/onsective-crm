@@ -1,34 +1,58 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { Department, EmployeeStatus, EmploymentType, Role } from "@prisma/client";
 import { hashPassword, requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function createEmployee(formData: FormData) {
+const employeeSchema = z.object({
+  name: z.string().trim().min(1, "Full name is required."),
+  email: z.string().trim().toLowerCase().email("Enter a valid work email."),
+  password: z.string().min(8, "Password must be at least 8 characters."),
+  jobTitle: z.string().trim().min(1, "Job title is required."),
+  department: z.nativeEnum(Department),
+  employmentType: z.nativeEnum(EmploymentType),
+  role: z.enum([Role.ADMIN, Role.MANAGER, Role.EMPLOYEE]),
+  phone: z.string().trim().optional(),
+  salary: z.coerce.number().min(0).optional().or(z.literal("").transform(() => undefined)),
+  managerId: z.string().optional(),
+  hireDate: z.string().optional(),
+});
+
+export async function createEmployee(_prev: string | null, formData: FormData): Promise<string | null> {
   await requireAdmin();
+
+  const parsed = employeeSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return parsed.error.issues[0].message;
+  const data = parsed.data;
+
+  if (await prisma.user.findUnique({ where: { email: data.email } })) {
+    return `${data.email} is already used by another account.`;
+  }
 
   await prisma.user.create({
     data: {
-      name: String(formData.get("name")),
-      email: String(formData.get("email")).toLowerCase().trim(),
-      passwordHash: await hashPassword(String(formData.get("password"))),
-      role: String(formData.get("role")) as Role,
+      name: data.name,
+      email: data.email,
+      passwordHash: await hashPassword(data.password),
+      role: data.role,
       employee: {
         create: {
-          jobTitle: String(formData.get("jobTitle")),
-          department: String(formData.get("department")) as Department,
-          employmentType: String(formData.get("employmentType")) as EmploymentType,
-          phone: String(formData.get("phone") ?? "") || null,
-          salary: formData.get("salary") ? Number(formData.get("salary")) : null,
-          managerId: String(formData.get("managerId") ?? "") || null,
-          hireDate: formData.get("hireDate") ? new Date(String(formData.get("hireDate"))) : new Date(),
+          jobTitle: data.jobTitle,
+          department: data.department,
+          employmentType: data.employmentType,
+          phone: data.phone || null,
+          salary: typeof data.salary === "number" ? data.salary : null,
+          managerId: data.managerId || null,
+          hireDate: data.hireDate ? new Date(data.hireDate) : new Date(),
         },
       },
     },
   });
 
   revalidatePath("/employees");
+  return null;
 }
 
 export async function setEmployeeStatus(formData: FormData) {

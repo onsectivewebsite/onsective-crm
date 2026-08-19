@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { ClientStatus } from "@prisma/client";
-import { Badge, Button, Card, Empty, Field, PageHeader, Table, Td, inputClass } from "@/components/ui";
-import { labelize, money } from "@/lib/format";
+import { Badge, Card, Empty, PageHeader, Table, Td } from "@/components/ui";
+import { money } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import { requireStaff } from "@/lib/auth";
-import { createClient } from "./actions";
+import ClientForm from "./client-form";
 
 export default async function ClientsPage() {
   await requireStaff();
@@ -59,38 +58,7 @@ export default async function ClientsPage() {
 
       <div className="mt-6">
         <Card title="Add client">
-          <form action={createClient} className="grid gap-4 md:grid-cols-3">
-            <Field label="Company">
-              <input name="company" required className={inputClass} />
-            </Field>
-            <Field label="Primary contact">
-              <input name="contactName" required className={inputClass} />
-            </Field>
-            <Field label="Email">
-              <input name="email" type="email" required className={inputClass} />
-            </Field>
-            <Field label="Phone">
-              <input name="phone" className={inputClass} />
-            </Field>
-            <Field label="Website">
-              <input name="website" className={inputClass} />
-            </Field>
-            <Field label="Industry">
-              <input name="industry" className={inputClass} />
-            </Field>
-            <Field label="Status">
-              <select name="status" className={inputClass} defaultValue={ClientStatus.PROSPECT}>
-                {Object.values(ClientStatus).map((status) => (
-                  <option key={status} value={status}>
-                    {labelize(status)}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <div className="md:col-span-3">
-              <Button type="submit">Add client</Button>
-            </div>
-          </form>
+          <ClientForm />
         </Card>
       </div>
     </>

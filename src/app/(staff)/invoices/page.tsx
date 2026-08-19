@@ -49,6 +49,7 @@ export default async function InvoicesPage() {
                       <input type="hidden" name="invoiceId" value={invoice.id} />
                       <select
                         name="status"
+                        key={invoice.status}
                         defaultValue={invoice.status}
                         className="rounded-lg border border-slate-300 px-2 py-1 text-xs"
                       >

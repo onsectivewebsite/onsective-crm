@@ -20,7 +20,7 @@ export default function DealBoard({ stages, deals }: { stages: DealStage[]; deal
   const [pending, startTransition] = useTransition();
 
   return (
-    <div className={`grid gap-3 md:grid-cols-3 xl:grid-cols-6 ${pending ? "opacity-70" : ""}`}>
+    <div className={`grid gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 ${pending ? "opacity-70" : ""}`}>
       {stages.map((stage) => {
         const stageDeals = deals.filter((deal) => deal.stage === stage);
         const total = stageDeals.reduce((sum, deal) => sum + deal.value, 0);
@@ -32,7 +32,7 @@ export default function DealBoard({ stages, deals }: { stages: DealStage[]; deal
               const id = event.dataTransfer.getData("text/deal-id");
               if (id) startTransition(() => moveDeal(id, stage));
             }}
-            className="min-h-40 rounded-xl border border-slate-200 bg-white p-3"
+            className="min-h-40 min-w-0 rounded-xl border border-slate-200 bg-white p-3"
           >
             <div className="mb-2 flex items-baseline justify-between">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{labelize(stage)}</p>
@@ -45,7 +45,7 @@ export default function DealBoard({ stages, deals }: { stages: DealStage[]; deal
                   key={deal.id}
                   draggable
                   onDragStart={(event) => event.dataTransfer.setData("text/deal-id", deal.id)}
-                  className="cursor-grab rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm active:cursor-grabbing"
+                  className="cursor-grab break-words rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm active:cursor-grabbing"
                 >
                   <p className="font-medium text-slate-800">{deal.title}</p>
                   <p className="text-xs text-slate-500">{deal.company ?? deal.contactName}</p>

@@ -63,7 +63,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           action={
             <form action={updateProjectStatus} className="flex items-center gap-2">
               <input type="hidden" name="projectId" value={project.id} />
-              <select name="status" defaultValue={project.status} className="rounded-lg border border-slate-300 px-2 py-1 text-sm">
+              <select name="status" key={project.status} defaultValue={project.status} className="rounded-lg border border-slate-300 px-2 py-1 text-sm">
                 {Object.values(ProjectStatus).map((status) => (
                   <option key={status} value={status}>
                     {labelize(status)}

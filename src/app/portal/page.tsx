@@ -13,7 +13,7 @@ export default async function PortalHome() {
     include: {
       owner: { include: { user: true } },
       projects: { include: { tasks: { select: { status: true, clientVisible: true } } }, orderBy: { createdAt: "desc" } },
-      invoices: { orderBy: { dueDate: "asc" } },
+      invoices: { where: { status: { not: "DRAFT" } }, orderBy: { dueDate: "asc" } },
       tickets: { orderBy: { updatedAt: "desc" }, take: 5 },
     },
   });
